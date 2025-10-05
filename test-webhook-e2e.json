@@ -1,0 +1,11 @@
+{
+  "call_id": "call_e2e_test",
+  "mc_number": "139932",
+  "carrier_name": "DARK KNIGHT TRANSPORT LLC",
+  "load_id": "LOAD-001",
+  "final_price": 2650,
+  "transcript": "AI: Hi! This is LoadMatch. What's your MC number?\nCarrier: It's 139932.\nAI: Great! You're verified. Looking for loads from Chicago to Dallas?\nCarrier: Yes, exactly!\nAI: Perfect! I have LOAD-001, Dry Van, 950 miles, $2500.\nCarrier: Hmm, can you do $2800?\nAI: How about $2650?\nCarrier: Deal! That sounds great. Thank you!\nAI: Excellent! Booking it now for $2650.",
+  "duration": 240,
+  "call_start": "2025-10-05T14:30:00Z",
+  "call_end": "2025-10-05T14:34:00Z"
+}

@@ -1,0 +1,11 @@
+{
+  "call_id": "call_test_001",
+  "mc_number": "139932",
+  "carrier_name": "Swift Transportation",
+  "load_id": "LOAD-001",
+  "final_price": 2600,
+  "transcript": "Great! Thank you so much. That rate sounds perfect. Yes deal!",
+  "duration": 180,
+  "call_start": "2025-10-05T14:00:00Z",
+  "call_end": "2025-10-05T14:03:00Z"
+}

@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import carrierRoutes from './routes/carrier.routes';
 import loadRoutes from './routes/load.routes';
 import negotiationRoutes from './routes/negotiation.routes';
+import webhookRoutes from './routes/webhook.routes';
 
 // Load environment variables
 dotenv.config();
@@ -28,6 +29,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api/carrier', carrierRoutes);
 app.use('/api/loads', loadRoutes);
 app.use('/api/negotiation', negotiationRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 // Start server
 app.listen(PORT, () => {
@@ -36,6 +38,7 @@ app.listen(PORT, () => {
   console.log(`🔍 FMCSA verify: POST http://localhost:${PORT}/api/carrier/verify/:mc`);
   console.log(`🚚 Load search: GET http://localhost:${PORT}/api/loads/search?origin=X&destination=Y`);
   console.log(`💰 Negotiation: POST http://localhost:${PORT}/api/negotiation/evaluate`);
+  console.log(`📞 Webhook: POST http://localhost:${PORT}/api/webhooks/happyrobot`);
 });
 
 export default app;
