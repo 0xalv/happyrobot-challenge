@@ -58,38 +58,37 @@ model Negotiation {
 
 // Call model - Tracks complete call data from HappyRobot
 model Call {
-  id              String   @id @default(cuid())
-  call_id         String   @unique  // HappyRobot call ID
+  id                 String   @id @default(cuid())
 
   // Carrier information
-  mc_number       String?
-  carrier_name    String?
+  mc_number          String?
+  carrier            String?  // Carrier company name
 
   // Load information
-  load_id         String?
-  final_price     Float?
+  load_id            String?
+  final_price        Float?
 
-  // Call outcome classification
-  outcome         String   // BOOKED, NOT_INTERESTED, TRANSFERRED, NO_MATCH, ERROR
-  outcome_reason  String?  // Detailed reason for outcome
+  // Call outcome classification (from HappyRobot AI Classify)
+  outcome            String?  // BOOKED, DECLINED, ERROR
+  outcome_reason     String?  // Detailed reason for outcome
 
-  // Sentiment analysis
-  sentiment       String   // POSITIVE, NEUTRAL, NEGATIVE
-  sentiment_score Float?   // 0.0 to 1.0
+  // Sentiment analysis (from HappyRobot AI Classify)
+  sentiment          String?  // POSITIVE, NEUTRAL, NEGATIVE
+
+  // Negotiation data (from HappyRobot AI Extract)
+  negotiation_rounds Int?     // Number of negotiation rounds (1, 2, 3)
 
   // Call metadata
-  duration        Int?     // Call duration in seconds
-  transcript      String?  // Full call transcript (optional)
+  duration           Int?     // Call duration in seconds
+  transcript         String?  // Full call transcript (optional)
 
   // Timestamps
-  call_start      DateTime?
-  call_end        DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  call_end           DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   @@index([mc_number])
   @@index([load_id])
   @@index([outcome])
   @@index([sentiment])
-  @@index([call_start])
 }

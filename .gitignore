@@ -21,8 +21,11 @@ npm-debug.log*
 # Prisma
 prisma/migrations/
 
-challenge-context/email.md
-challenge-context/challenges.md
+# Local documentation and notes
+challenge-context/
+agent-docu/
+happyrobot-docs/
 PROGRESS.md
+PROGRESS-AGENT.md
 ISSUES-AND-NOTES.md
 fmcsa-test-script.js

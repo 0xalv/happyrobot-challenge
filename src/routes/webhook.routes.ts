@@ -1,7 +1,5 @@
 import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { classificationService } from '../services/classification.service';
-import { sentimentService } from '../services/sentiment.service';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -9,7 +7,7 @@ const prisma = new PrismaClient();
 /**
  * HappyRobot Webhook Handler
  * Receives call completion data from HappyRobot platform
- * Orchestrates classification, sentiment analysis, and data storage
+ * Stores data directly from HappyRobot's AI Classify and AI Extract nodes
  */
 router.post('/happyrobot', async (req: Request, res: Response) => {
   try {
@@ -17,89 +15,66 @@ router.post('/happyrobot', async (req: Request, res: Response) => {
     console.log('📦 Payload:', JSON.stringify(req.body, null, 2));
 
     const {
-      call_id,
+      call_id,              // HappyRobot sends this automatically, we just ignore it
       mc_number,
-      carrier_name,
+      carrier,
       load_id,
       final_price,
+      outcome,              // From HappyRobot AI Classify #1
+      outcome_reason,       // From HappyRobot AI Extract
+      sentiment,            // From HappyRobot AI Classify #2
+      negotiation_rounds,   // From HappyRobot AI Extract
       transcript,
-      call_start,
       call_end,
       duration,
     } = req.body;
 
-    // Validate required fields
-    if (!call_id) {
-      console.error('❌ Missing required field: call_id');
-      return res.status(400).json({
-        error: 'Missing required field: call_id',
-      });
-    }
-
-    console.log(`\n🔍 Processing call: ${call_id}`);
+    console.log(`\n🔍 Processing call data:`);
     console.log(`   MC Number: ${mc_number || 'N/A'}`);
+    console.log(`   Carrier: ${carrier || 'N/A'}`);
     console.log(`   Load: ${load_id || 'N/A'}`);
     console.log(`   Final Price: ${final_price ? '$' + final_price : 'N/A'}`);
+    console.log(`   Outcome: ${outcome || 'N/A'}`);
+    console.log(`   Outcome Reason: ${outcome_reason || 'N/A'}`);
+    console.log(`   Sentiment: ${sentiment || 'N/A'}`);
+    console.log(`   Negotiation Rounds: ${negotiation_rounds || 'N/A'}`);
 
-    // Step 1: Classify call outcome
-    console.log('\n--- Step 1: Classification ---');
-    const classification = classificationService.classifyOutcome({
-      transcript,
-      load_id,
-      final_price,
-      mc_number,
-      call_duration: duration,
-    });
-
-    // Step 2: Analyze sentiment
-    console.log('\n--- Step 2: Sentiment Analysis ---');
-    const sentimentAnalysis = sentimentService.analyzeSentiment({
-      transcript,
-      outcome: classification.outcome,
-      call_duration: duration,
-    });
-
-    // Step 3: Store call data in database
-    console.log('\n--- Step 3: Storing Data ---');
+    // Store call data in database
+    console.log('\n--- Storing Data ---');
     const call = await prisma.call.create({
       data: {
-        call_id,
-        mc_number: mc_number || null,
-        carrier_name: carrier_name || null,
+        mc_number: mc_number ? String(mc_number) : null,
+        carrier: carrier || null,
         load_id: load_id || null,
-        final_price: final_price || null,
-        outcome: classification.outcome,
-        outcome_reason: classification.outcome_reason,
-        sentiment: sentimentAnalysis.sentiment,
-        sentiment_score: sentimentAnalysis.sentiment_score,
+        final_price: final_price && final_price !== "" ? (typeof final_price === 'string' ? parseFloat(final_price) : final_price) : null,
+        outcome: outcome || null,
+        outcome_reason: outcome_reason || null,
+        sentiment: sentiment || null,
+        negotiation_rounds: negotiation_rounds && negotiation_rounds !== "" ? (typeof negotiation_rounds === 'string' ? parseInt(negotiation_rounds) : negotiation_rounds) : null,
         duration: duration || null,
-        transcript: transcript || null,
-        call_start: call_start ? new Date(call_start) : null,
+        transcript: Array.isArray(transcript) ? JSON.stringify(transcript) : (transcript || null),
         call_end: call_end ? new Date(call_end) : null,
       },
     });
 
     console.log(`\n✅ Call saved to database: ${call.id}`);
-    console.log('\n📊 Results:');
-    console.log(`   Outcome: ${classification.outcome}`);
-    console.log(`   Reason: ${classification.outcome_reason}`);
-    console.log(`   Sentiment: ${sentimentAnalysis.sentiment} (${sentimentAnalysis.sentiment_score})`);
+    console.log('\n📊 Call Data:');
+    console.log(`   Outcome: ${call.outcome}`);
+    console.log(`   Outcome Reason: ${call.outcome_reason}`);
+    console.log(`   Sentiment: ${call.sentiment}`);
+    console.log(`   Negotiation Rounds: ${call.negotiation_rounds}`);
     console.log('\n===== Webhook Processing Complete =====\n');
 
     // Return success response
     return res.status(200).json({
       success: true,
-      call_id: call.call_id,
       database_id: call.id,
-      classification: {
-        outcome: classification.outcome,
-        outcome_reason: classification.outcome_reason,
-        confidence: classification.confidence,
-      },
-      sentiment: {
-        sentiment: sentimentAnalysis.sentiment,
-        score: sentimentAnalysis.sentiment_score,
-        indicators: sentimentAnalysis.indicators,
+      data: {
+        outcome: call.outcome,
+        outcome_reason: call.outcome_reason,
+        sentiment: call.sentiment,
+        negotiation_rounds: call.negotiation_rounds,
+        final_price: call.final_price,
       },
     });
   } catch (error) {
@@ -136,20 +111,20 @@ router.get('/calls', async (req: Request, res: Response) => {
 });
 
 /**
- * Get call by ID
+ * Get call by database ID
  */
-router.get('/calls/:call_id', async (req: Request, res: Response) => {
+router.get('/calls/:id', async (req: Request, res: Response) => {
   try {
-    const { call_id } = req.params;
+    const { id } = req.params;
 
     const call = await prisma.call.findUnique({
-      where: { call_id },
+      where: { id },
     });
 
     if (!call) {
       return res.status(404).json({
         error: 'Call not found',
-        call_id,
+        id,
       });
     }
 

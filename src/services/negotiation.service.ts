@@ -18,9 +18,13 @@ export interface EvaluateOfferResult {
 }
 
 export class NegotiationService {
-  // Acceptance threshold: ±8% of loadboard rate
+  // Acceptance threshold: up to 8% above loadboard rate
   private readonly ACCEPTANCE_THRESHOLD = 0.08;
   private readonly MAX_ROUNDS = 3;
+
+  // Progressive counter-offer percentages by round
+  // Round 1: offer +3%, Round 2: offer +5.5%, Round 3: transfer
+  private readonly COUNTER_PERCENTAGES = [0.03, 0.055];
 
   async evaluateOffer(params: EvaluateOfferParams): Promise<EvaluateOfferResult> {
     const { call_id, load_id, loadboard_rate, carrier_offer, round } = params;
@@ -48,28 +52,33 @@ export class NegotiationService {
       reason = `Maximum negotiation rounds (${this.MAX_ROUNDS}) reached. Transferring to sales representative.`;
       console.log(`   ⚠️ Action: ${action} - ${reason}`);
     }
-    // Rule 2: If within ±8%, accept the offer
-    else if (absolutePercentageDiff <= this.ACCEPTANCE_THRESHOLD * 100) {
+    // Rule 2: Accept if carrier asks for loadboard_rate or less, OR up to 8% above loadboard_rate
+    else if (carrier_offer <= loadboard_rate * (1 + this.ACCEPTANCE_THRESHOLD)) {
       action = 'ACCEPT';
-      reason = `Carrier offer is within acceptable range (±${this.ACCEPTANCE_THRESHOLD * 100}% of loadboard rate). Accepting offer.`;
+      if (carrier_offer < loadboard_rate) {
+        reason = `Carrier offer ($${carrier_offer}) is ${Math.abs(percentageDiff).toFixed(2)}% below loadboard rate ($${loadboard_rate}). Excellent deal - accepting immediately.`;
+      } else if (carrier_offer === loadboard_rate) {
+        reason = `Carrier offer ($${carrier_offer}) matches loadboard rate exactly. Accepting offer.`;
+      } else {
+        reason = `Carrier offer is ${percentageDiff.toFixed(2)}% above loadboard rate, within acceptable range (+${this.ACCEPTANCE_THRESHOLD * 100}%). Accepting offer.`;
+      }
       console.log(`   ✅ Action: ${action} - ${reason}`);
     }
-    // Rule 3: Counter-offer
+    // Rule 3: Counter-offer if carrier asks for more than 8% above loadboard_rate
     else {
       action = 'COUNTER';
 
-      // Calculate counter-offer: move 50% towards the carrier's offer
-      // This shows willingness to negotiate while protecting margins
-      const midpoint = (loadboard_rate + carrier_offer) / 2;
-      counter_offer = Math.round(midpoint);
+      // Progressive counter-offer strategy:
+      // Round 1: offer loadboard_rate + 3%
+      // Round 2: offer loadboard_rate + 5.5%
+      // Round 3+: would transfer (handled by Rule 1)
+      const counterPercentage = this.COUNTER_PERCENTAGES[round - 1] || this.COUNTER_PERCENTAGES[this.COUNTER_PERCENTAGES.length - 1];
+      counter_offer = Math.round(loadboard_rate * (1 + counterPercentage));
 
-      if (carrier_offer < loadboard_rate) {
-        reason = `Carrier offer is ${percentageDiff.toFixed(2)}% below loadboard rate. Counter-offering at $${counter_offer}.`;
-      } else {
-        reason = `Carrier offer is ${percentageDiff.toFixed(2)}% above loadboard rate. Counter-offering at $${counter_offer}.`;
-      }
+      const counterPercentDisplay = (counterPercentage * 100).toFixed(1);
+      reason = `Carrier offer is ${percentageDiff.toFixed(2)}% above loadboard rate (max acceptable is +${this.ACCEPTANCE_THRESHOLD * 100}%). Counter-offering at $${counter_offer} (+${counterPercentDisplay}% of loadboard rate).`;
 
-      console.log(`   🔄 Action: ${action} - Counter offer: $${counter_offer}`);
+      console.log(`   🔄 Action: ${action} - Counter offer: $${counter_offer} (Round ${round}: +${counterPercentDisplay}%)`);
       console.log(`   Reason: ${reason}`);
     }
 
