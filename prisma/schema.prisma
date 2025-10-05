@@ -1,0 +1,35 @@
+// Prisma Schema for HappyRobot Challenge
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Load model - 13 campos requeridos por el challenge
+model Load {
+  id                String   @id @default(cuid())
+  load_id           String   @unique
+  origin            String
+  destination       String
+  pickup_datetime   DateTime
+  delivery_datetime DateTime
+  equipment_type    String
+  loadboard_rate    Float
+  notes             String?
+  weight            Int
+  commodity_type    String
+  num_of_pieces     Int
+  miles             Int
+  dimensions        String
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([origin])
+  @@index([destination])
+  @@index([equipment_type])
+}

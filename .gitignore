@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Prisma
+prisma/migrations/
+
+challenge-context/email.md
+challenge-context/challenges.md
+PROGRESS.md
+ISSUES-AND-NOTES.md
+fmcsa-test-script.js
