@@ -2,6 +2,8 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import carrierRoutes from './routes/carrier.routes';
+import loadRoutes from './routes/load.routes';
+import negotiationRoutes from './routes/negotiation.routes';
 
 // Load environment variables
 dotenv.config();
@@ -24,12 +26,16 @@ app.get('/health', (req: Request, res: Response) => {
 
 // Routes
 app.use('/api/carrier', carrierRoutes);
+app.use('/api/loads', loadRoutes);
+app.use('/api/negotiation', negotiationRoutes);
 
 // Start server
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`🔍 FMCSA verify: POST http://localhost:${PORT}/api/carrier/verify/:mc`);
+  console.log(`🚚 Load search: GET http://localhost:${PORT}/api/loads/search?origin=X&destination=Y`);
+  console.log(`💰 Negotiation: POST http://localhost:${PORT}/api/negotiation/evaluate`);
 });
 
 export default app;

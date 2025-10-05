@@ -29,7 +29,29 @@ model Load {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
+  negotiations      Negotiation[]
+
   @@index([origin])
   @@index([destination])
   @@index([equipment_type])
+}
+
+// Negotiation model - Tracks negotiation rounds for each call
+model Negotiation {
+  id              String   @id @default(cuid())
+  call_id         String?  // HappyRobot call ID (optional for testing)
+  load_id         String
+  load            Load     @relation(fields: [load_id], references: [load_id], onDelete: Cascade)
+
+  round           Int      // Negotiation round number (1, 2, 3)
+  carrier_offer   Float    // Carrier's offer in dollars
+  counter_offer   Float?   // System's counter-offer (if any)
+  action          String   // ACCEPT, COUNTER, TRANSFER
+  reason          String?  // Explanation of the decision
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([call_id])
+  @@index([load_id])
 }
