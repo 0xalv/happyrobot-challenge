@@ -13,6 +13,7 @@ Backend API for automated inbound carrier call handling with AI-powered negotiat
 - **HappyRobot Integration**: Webhook endpoints for call completion data
 - **Real-time Activity Tracking**: Live event logging for active calls
 - **Database**: PostgreSQL with Prisma ORM
+- **Security**: API key authentication on all endpoints (except `/health`)
 
 ## 📁 Project Structure
 
@@ -54,6 +55,7 @@ cp .env.example .env
 # Edit .env with your:
 #   - DATABASE_URL (PostgreSQL connection string)
 #   - FMCSA_API_KEY (FMCSA Web Key)
+#   - API_KEY (Generate with: openssl rand -base64 32)
 
 # Initialize database
 npx prisma db push
@@ -77,6 +79,13 @@ Server runs on `http://localhost:3001`
 - `npx prisma db seed` - Seed database with sample loads
 
 ## 📡 API Endpoints
+
+**Authentication**: All endpoints (except `/health`) require an `x-api-key` header.
+
+### Health Check
+```
+GET /health  # Public endpoint (no API key required)
+```
 
 ### Carrier Verification
 ```

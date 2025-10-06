@@ -6,6 +6,7 @@ import loadRoutes from './routes/load.routes';
 import negotiationRoutes from './routes/negotiation.routes';
 import webhookRoutes from './routes/webhook.routes';
 import dashboardRoutes from './routes/dashboard.routes';
+import { apiKeyAuth } from './middleware/auth.middleware';
 
 // Load environment variables
 dotenv.config();
@@ -17,7 +18,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Health check endpoint
+// Health check endpoint (PUBLIC - No API key required)
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
@@ -26,12 +27,12 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
-// Routes
-app.use('/api/carrier', carrierRoutes);
-app.use('/api/loads', loadRoutes);
-app.use('/api/negotiation', negotiationRoutes);
-app.use('/api/webhooks', webhookRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+// Protected API Routes (API key required)
+app.use('/api/carrier', apiKeyAuth, carrierRoutes);
+app.use('/api/loads', apiKeyAuth, loadRoutes);
+app.use('/api/negotiation', apiKeyAuth, negotiationRoutes);
+app.use('/api/webhooks', apiKeyAuth, webhookRoutes);
+app.use('/api/dashboard', apiKeyAuth, dashboardRoutes);
 
 // Start server
 app.listen(PORT, () => {
