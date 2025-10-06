@@ -36,7 +36,7 @@ export class FMCSAService {
         headers: {
           'Accept': 'application/json',
         },
-        timeout: 10000,
+        timeout: 30000, // 30 seconds - FMCSA API can be slow
       });
 
       console.log(`📦 Response status: ${response.status}`);

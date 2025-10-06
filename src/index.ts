@@ -5,6 +5,7 @@ import carrierRoutes from './routes/carrier.routes';
 import loadRoutes from './routes/load.routes';
 import negotiationRoutes from './routes/negotiation.routes';
 import webhookRoutes from './routes/webhook.routes';
+import dashboardRoutes from './routes/dashboard.routes';
 
 // Load environment variables
 dotenv.config();
@@ -30,6 +31,7 @@ app.use('/api/carrier', carrierRoutes);
 app.use('/api/loads', loadRoutes);
 app.use('/api/negotiation', negotiationRoutes);
 app.use('/api/webhooks', webhookRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Start server
 app.listen(PORT, () => {
@@ -39,6 +41,8 @@ app.listen(PORT, () => {
   console.log(`🚚 Load search: GET http://localhost:${PORT}/api/loads/search?origin=X&destination=Y`);
   console.log(`💰 Negotiation: POST http://localhost:${PORT}/api/negotiation/evaluate`);
   console.log(`📞 Webhook: POST http://localhost:${PORT}/api/webhooks/happyrobot`);
+  console.log(`📈 Dashboard Activity: GET http://localhost:${PORT}/api/dashboard/activity`);
+  console.log(`📉 Dashboard Metrics: GET http://localhost:${PORT}/api/dashboard/metrics`);
 });
 
 export default app;

@@ -16,6 +16,7 @@ router.post('/happyrobot', async (req: Request, res: Response) => {
 
     const {
       call_id,              // HappyRobot sends this automatically, we just ignore it
+      run_id,               // Run ID from HappyRobot for tracking
       mc_number,
       carrier,
       load_id,
@@ -43,6 +44,7 @@ router.post('/happyrobot', async (req: Request, res: Response) => {
     console.log('\n--- Storing Data ---');
     const call = await prisma.call.create({
       data: {
+        run_id: run_id || null,
         mc_number: mc_number ? String(mc_number) : null,
         carrier: carrier || null,
         load_id: load_id || null,
@@ -63,6 +65,31 @@ router.post('/happyrobot', async (req: Request, res: Response) => {
     console.log(`   Outcome Reason: ${call.outcome_reason}`);
     console.log(`   Sentiment: ${call.sentiment}`);
     console.log(`   Negotiation Rounds: ${call.negotiation_rounds}`);
+
+    // Log CALL_ENDED event to CallActivity if run_id is provided
+    if (run_id) {
+      await prisma.callActivity.create({
+        data: {
+          run_id,
+          event_type: 'CALL_ENDED',
+          data: {
+            mc_number,
+            carrier,
+            load_id,
+            final_price,
+            outcome,
+            outcome_reason,
+            sentiment,
+            negotiation_rounds,
+            duration,
+            call_end,
+            database_call_id: call.id,
+          },
+        },
+      });
+      console.log(`✅ CallActivity logged: CALL_ENDED for run ${run_id}`);
+    }
+
     console.log('\n===== Webhook Processing Complete =====\n');
 
     // Return success response

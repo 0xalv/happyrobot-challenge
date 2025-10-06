@@ -39,6 +39,7 @@ model Load {
 // Negotiation model - Tracks negotiation rounds for each call
 model Negotiation {
   id              String   @id @default(cuid())
+  run_id          String?  // Run identifier from HappyRobot for grouping events
   call_id         String?  // HappyRobot call ID (optional for testing)
   load_id         String
   load            Load     @relation(fields: [load_id], references: [load_id], onDelete: Cascade)
@@ -52,6 +53,7 @@ model Negotiation {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  @@index([run_id])
   @@index([call_id])
   @@index([load_id])
 }
@@ -59,6 +61,7 @@ model Negotiation {
 // Call model - Tracks complete call data from HappyRobot
 model Call {
   id                 String   @id @default(cuid())
+  run_id             String?  // Run identifier from HappyRobot for grouping events
 
   // Carrier information
   mc_number          String?
@@ -87,8 +90,22 @@ model Call {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
+  @@index([run_id])
   @@index([mc_number])
   @@index([load_id])
   @@index([outcome])
   @@index([sentiment])
+}
+
+// CallActivity model - Real-time event tracking during active calls
+model CallActivity {
+  id          String   @id @default(cuid())
+  run_id      String   // Run identifier from HappyRobot for grouping events
+  event_type  String   // MC_VERIFIED, LOAD_SEARCHED, NEGOTIATION_ROUND, CALL_TRANSFERRED, CALL_ENDED
+  data        Json     // Flexible JSON field for event-specific data
+  timestamp   DateTime @default(now())
+
+  @@index([run_id])
+  @@index([event_type])
+  @@index([timestamp])
 }

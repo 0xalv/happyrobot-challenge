@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export interface EvaluateOfferParams {
+  run_id?: string;
   call_id?: string;
   load_id: string;
   loadboard_rate: number;
@@ -27,7 +28,7 @@ export class NegotiationService {
   private readonly COUNTER_PERCENTAGES = [0.03, 0.055];
 
   async evaluateOffer(params: EvaluateOfferParams): Promise<EvaluateOfferResult> {
-    const { call_id, load_id, loadboard_rate, carrier_offer, round } = params;
+    const { run_id, call_id, load_id, loadboard_rate, carrier_offer, round } = params;
 
     console.log(`💰 Evaluating offer for ${load_id}:`);
     console.log(`   Loadboard rate: $${loadboard_rate}`);
@@ -85,6 +86,7 @@ export class NegotiationService {
     // Save negotiation round to database
     const negotiation = await prisma.negotiation.create({
       data: {
+        run_id: run_id || null,
         call_id: call_id || null,
         load_id,
         round,
