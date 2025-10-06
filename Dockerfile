@@ -23,11 +23,15 @@ RUN npx prisma generate
 # Build TypeScript
 RUN npm run build
 
-# Remove devDependencies to reduce image size
-RUN npm prune --production
+# Keep all dependencies including prisma for migrations
+# Note: We keep devDependencies to ensure prisma CLI is available
+
+# Copy startup script
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
 # Expose port
 EXPOSE 3001
 
 # Start command
-CMD ["npm", "start"]
+CMD ["/app/start.sh"]
