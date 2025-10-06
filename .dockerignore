@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Documentation
+*.md
+!README.md
+
+# Local documentation
+challenge-context/
+agent-docu/
+happyrobot-docs/
+PROGRESS.md
+PROGRESS-AGENT.md
+ISSUES-AND-NOTES.md
+CLAUDE.md
+DEPLOYMENT-PROGRESS.md
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Test files
+*.test.ts
+*.spec.ts

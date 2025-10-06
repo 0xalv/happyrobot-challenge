@@ -78,6 +78,29 @@ Server runs on `http://localhost:3001`
 - `npx prisma studio` - Open Prisma Studio (database GUI)
 - `npx prisma db seed` - Seed database with sample loads
 
+## 🐳 Docker (Production)
+
+Run the entire stack (PostgreSQL + API) with Docker:
+
+```bash
+# Build and start containers
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop containers
+docker-compose down
+```
+
+**Environment Variables**: Docker Compose reads from `.env` file for `FMCSA_API_KEY` and `API_KEY`.
+
+The Docker setup:
+- Automatically runs database migrations on startup
+- Uses PostgreSQL 16 Alpine for the database
+- Exposes API on port 3001
+- Includes health checks for both services
+
 ## 📡 API Endpoints
 
 **Authentication**: All endpoints (except `/health`) require an `x-api-key` header.
