@@ -101,6 +101,104 @@ The Docker setup:
 - Exposes API on port 3001
 - Includes health checks for both services
 
+## Railway Deployment (Production)
+
+Deploy the backend API to Railway cloud platform with managed PostgreSQL.
+
+### Prerequisites
+- Railway account (sign up at https://railway.app)
+- GitHub repository with your code
+- FMCSA API key
+
+### Deployment Steps
+
+**1. Create Railway Account**
+- Sign up at https://railway.app
+- Connect your GitHub account
+
+**2. Import Project**
+- Click "New Project" > "Deploy from GitHub repo"
+- Select your `happyrobot-challenge` repository
+- Railway will automatically detect the Node.js project
+
+**3. Add PostgreSQL Database**
+- In your project dashboard, click "New" > "Database" > "PostgreSQL"
+- Railway will provision a managed PostgreSQL instance
+- Database credentials are automatically generated
+
+**4. Configure Environment Variables**
+- Go to your backend service settings > "Variables" tab
+- Add the following variables:
+  - `DATABASE_URL`: Copy from the PostgreSQL service (Railway auto-links this)
+  - `API_KEY`: Generate a secure key (e.g., `openssl rand -base64 32`)
+  - `FMCSA_API_KEY`: Your FMCSA Web Key
+  - `PORT`: 3001 (optional, Railway sets this automatically)
+- Click "Save" after adding each variable
+
+**5. Deploy Project**
+- Railway automatically builds and deploys your project
+- The `start.sh` script handles database schema setup automatically via `npx prisma db push`
+- No manual migration steps needed - everything happens on deployment
+
+**6. Generate Public URL**
+- Go to service "Settings" > "Networking"
+- Click "Generate Domain" to create a public URL
+- Your API will be available at `https://your-project.up.railway.app`
+
+**7. Update HappyRobot Webhook**
+- Copy your Railway public URL
+- Go to the HappyRobot agent and change the webhooks endpoint URL to: `https://your-project.up.railway.app/api/webhooks/happyrobot`
+- Add custom header: `x-api-key: YOUR_API_KEY`
+
+**8. Verify Deployment**
+- Test health endpoint: `curl https://your-project.up.railway.app/health`
+- Test carrier verification:
+  ```bash
+  curl -X POST https://your-project.up.railway.app/api/carrier/verify/139932 \
+    -H "x-api-key: YOUR_API_KEY"
+  ```
+
+### Accessing Your Deployment
+
+**Production API:** Your generated Railway domain (e.g., `https://happyrobot-challenge-production.up.railway.app`)
+
+**Database Access:**
+- Use Railway's PostgreSQL connection string from the Variables tab
+- Or use Prisma Studio locally by updating your `.env` with production `DATABASE_URL`
+
+**Monitoring:**
+- Railway dashboard shows real-time logs, metrics, and deployment status
+- Access logs via the "Deployments" tab
+
+### Troubleshooting
+
+**Database Connection Issues:**
+- Verify `DATABASE_URL` is set correctly in environment variables
+- Ensure Prisma migrations ran successfully
+- Check if PostgreSQL service is running in Railway dashboard
+
+**Webhook Not Working:**
+- Confirm API is accessible via health check endpoint
+- Verify `x-api-key` header is configured in HappyRobot
+- Check Railway logs for incoming webhook requests
+
+**Environment Variable Updates:**
+- After changing variables, Railway automatically redeploys
+- Wait for deployment to complete before testing
+
+### Railway CLI (Optional)
+
+Install Railway CLI for advanced management:
+```bash
+npm i -g @railway/cli
+railway login
+railway link  # Link to your project
+railway logs  # View real-time logs
+railway run npx prisma studio  # Run Prisma Studio against production DB
+```
+
+---
+
 ## 📡 API Endpoints
 
 **Authentication**: All endpoints (except `/health`) require an `x-api-key` header.
@@ -126,7 +224,7 @@ GET  /api/loads/:loadId       # Get load by ID
 ```
 POST /api/negotiation/evaluate      # Evaluate carrier offer
 POST /api/negotiation/accept-load   # Accept load (direct or post-negotiation)
-GET  /api/negotiation/history/:call_id   # Get negotiation history for a call
+GET  /api/negotiation/history/:run_id    # Get negotiation history for a run
 GET  /api/negotiation/load/:load_id      # Get negotiation history for a load
 ```
 
