@@ -4,7 +4,6 @@ const prisma = new PrismaClient();
 
 export interface EvaluateOfferParams {
   run_id?: string;
-  call_id?: string;
   load_id: string;
   loadboard_rate: number;
   carrier_offer: number;
@@ -28,7 +27,7 @@ export class NegotiationService {
   private readonly COUNTER_PERCENTAGES = [0.03, 0.055];
 
   async evaluateOffer(params: EvaluateOfferParams): Promise<EvaluateOfferResult> {
-    const { run_id, call_id, load_id, loadboard_rate, carrier_offer, round } = params;
+    const { run_id, load_id, loadboard_rate, carrier_offer, round } = params;
 
     console.log(`💰 Evaluating offer for ${load_id}:`);
     console.log(`   Loadboard rate: $${loadboard_rate}`);
@@ -87,7 +86,6 @@ export class NegotiationService {
     const negotiation = await prisma.negotiation.create({
       data: {
         run_id: run_id || null,
-        call_id: call_id || null,
         load_id,
         round,
         carrier_offer,
@@ -107,12 +105,12 @@ export class NegotiationService {
     };
   }
 
-  // Get negotiation history for a call
-  async getNegotiationHistory(call_id: string) {
-    console.log(`📜 Fetching negotiation history for call: ${call_id}`);
+  // Get negotiation history for a run
+  async getNegotiationHistory(run_id: string) {
+    console.log(`📜 Fetching negotiation history for run: ${run_id}`);
 
     const negotiations = await prisma.negotiation.findMany({
-      where: { call_id },
+      where: { run_id },
       orderBy: { round: 'asc' },
       include: {
         load: true,

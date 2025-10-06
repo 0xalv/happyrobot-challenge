@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 // Evaluate carrier offer
 router.post('/evaluate', async (req: Request, res: Response) => {
   try {
-    const { call_id, load_id, loadboard_rate, carrier_offer, round, run_id } = req.body;
+    const { load_id, loadboard_rate, carrier_offer, round, run_id } = req.body;
 
     // Validate required fields
     if (!load_id || !loadboard_rate || !carrier_offer || round === undefined) {
@@ -36,7 +36,6 @@ router.post('/evaluate', async (req: Request, res: Response) => {
 
     const result = await negotiationService.evaluateOffer({
       run_id,
-      call_id,
       load_id,
       loadboard_rate,
       carrier_offer,
@@ -77,16 +76,16 @@ router.post('/evaluate', async (req: Request, res: Response) => {
   }
 });
 
-// Get negotiation history for a call
-router.get('/history/:call_id', async (req: Request, res: Response) => {
+// Get negotiation history for a run
+router.get('/history/:run_id', async (req: Request, res: Response) => {
   try {
-    const { call_id } = req.params;
+    const { run_id } = req.params;
 
-    const history = await negotiationService.getNegotiationHistory(call_id);
+    const history = await negotiationService.getNegotiationHistory(run_id);
 
     return res.status(200).json({
       success: true,
-      call_id,
+      run_id,
       count: history.length,
       negotiations: history,
     });
@@ -124,7 +123,7 @@ router.get('/load/:load_id', async (req: Request, res: Response) => {
 // Accept load (handles both direct acceptance and post-negotiation acceptance)
 router.post('/accept-load', async (req: Request, res: Response) => {
   try {
-    const { call_id, load_id, loadboard_rate, run_id } = req.body;
+    const { load_id, loadboard_rate, run_id } = req.body;
 
     // Validate required fields
     if (!load_id || !loadboard_rate) {
@@ -177,7 +176,6 @@ router.post('/accept-load', async (req: Request, res: Response) => {
       negotiation = await prisma.negotiation.create({
         data: {
           run_id: run_id || null,
-          call_id: call_id || null,
           load_id,
           round: nextRound,
           carrier_offer: acceptedPrice,
@@ -207,7 +205,6 @@ router.post('/accept-load', async (req: Request, res: Response) => {
       negotiation = await prisma.negotiation.create({
         data: {
           run_id: run_id || null,
-          call_id: call_id || null,
           load_id,
           round: 0, // 0 indicates direct acceptance without negotiation
           carrier_offer: loadboard_rate,

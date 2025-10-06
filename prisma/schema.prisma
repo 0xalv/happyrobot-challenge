@@ -39,8 +39,7 @@ model Load {
 // Negotiation model - Tracks negotiation rounds for each call
 model Negotiation {
   id              String   @id @default(cuid())
-  run_id          String?  // Run identifier from HappyRobot for grouping events
-  call_id         String?  // HappyRobot call ID (optional for testing)
+  run_id          String?  // Run identifier from HappyRobot (each call = one run)
   load_id         String
   load            Load     @relation(fields: [load_id], references: [load_id], onDelete: Cascade)
 
@@ -54,7 +53,6 @@ model Negotiation {
   updatedAt       DateTime @updatedAt
 
   @@index([run_id])
-  @@index([call_id])
   @@index([load_id])
 }
 
